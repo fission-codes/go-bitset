@@ -2,6 +2,7 @@ package bitset
 
 import (
 	"encoding/hex"
+	"fmt"
 	"math"
 	"math/bits"
 )
@@ -14,10 +15,14 @@ type BitSet struct {
 const byteSize uint64 = 8
 
 // New returns a pointer to a new BitSet with the specified number of bits.
-func New(bitsCount uint64) *BitSet {
+func New(bitsCount uint64) (*BitSet, error) {
+	if bitsCount <= 0 {
+		return nil, fmt.Errorf("bitsCount must be a postive number")
+	}
+
 	bytesCount := int(math.Ceil(float64(bitsCount) / float64(byteSize)))
 	bytes := make([]byte, bytesCount)
-	return &BitSet{bytes, bitsCount}
+	return &BitSet{bytes, bitsCount}, nil
 }
 
 // NewFromBytes returns a pointer to a new BitSet with the specified bitsCount and bytes.
@@ -37,6 +42,34 @@ func (b *BitSet) Test(bitsIndex uint64) bool {
 	bytesIndex := bitsIndex / byteSize
 	bitmask := uint8(1) << uint8(bitsIndex%byteSize)
 	return (b.bytes[bytesIndex] & bitmask) > 0
+}
+
+// Union updates this BitSet to the bitwise OR of each byte of the provided BitSet.
+// Returns error if BitSets are not of the same size.
+func (b *BitSet) Union(other *BitSet) error {
+	if b.BytesCount() != other.BytesCount() {
+		return fmt.Errorf("cannot union BitSets of differing size")
+	}
+
+	for i := range b.bytes {
+		b.bytes[i] = b.bytes[i] | other.bytes[i]
+	}
+
+	return nil
+}
+
+// Intersect updates this BitSet to the bitwise AND of each byte of the provided BitSet.
+// Returns error if BitSets are not of the same size.
+func (b *BitSet) Intersect(other *BitSet) error {
+	if b.BytesCount() != other.BytesCount() {
+		return fmt.Errorf("cannot intersect BitSets of differing size")
+	}
+
+	for i := range b.bytes {
+		b.bytes[i] = b.bytes[i] & other.bytes[i]
+	}
+
+	return nil
 }
 
 // Bytes returns the byte slice containing the BitSet.
