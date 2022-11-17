@@ -20,14 +20,15 @@ func New(bitsCount uint64) (*BitSet, error) {
 		return nil, fmt.Errorf("bitsCount must be a postive number")
 	}
 
-	bytesCount := int(math.Ceil(float64(bitsCount) / float64(byteSize)))
-	bytes := make([]byte, bytesCount)
+	bytes := make([]byte, bytesCount(bitsCount))
 	return &BitSet{bytes, bitsCount}, nil
 }
 
 // NewFromBytes returns a pointer to a new BitSet with the specified bitsCount and bytes.
 func NewFromBytes(bitsCount uint64, bytes []byte) *BitSet {
-	return &BitSet{bytes, bitsCount}
+	newBytes := make([]byte, len(bytes))
+	copy(newBytes, bytes)
+	return &BitSet{newBytes, bitsCount}
 }
 
 // Set sets the bit at the specified index to true.
@@ -42,6 +43,11 @@ func (b *BitSet) Test(bitsIndex uint64) bool {
 	bytesIndex := bitsIndex / byteSize
 	bitmask := uint8(1) << uint8(bitsIndex%byteSize)
 	return (b.bytes[bytesIndex] & bitmask) > 0
+}
+
+// Copy returns a pointer to a copy of the bitset.
+func (b *BitSet) Copy() *BitSet {
+	return NewFromBytes(b.bitsCount, b.bytes)
 }
 
 // Union updates this BitSet to the bitwise OR of each byte of the provided BitSet.
@@ -99,4 +105,8 @@ func (b *BitSet) OnesCount() uint64 {
 // HexEncode returns the bytes of the BitSet encoded as a hexadecimal string.
 func (b *BitSet) HexEncode() string {
 	return hex.EncodeToString(b.bytes)
+}
+
+func bytesCount(bitsCount uint64) int {
+	return int(math.Ceil(float64(bitsCount) / float64(byteSize)))
 }

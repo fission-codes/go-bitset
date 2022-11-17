@@ -84,6 +84,30 @@ func TestHexEncode(t *testing.T) {
 	}
 }
 
+func TestCopy(t *testing.T) {
+	b1, _ := New(20)
+	b1.Set(5)
+
+	if !b1.Test(5) {
+		t.Errorf("expected bit 5 to be set")
+	}
+
+	if b1.Test(6) {
+		t.Errorf("expected bit 6 to not be set")
+	}
+
+	b2 := b1.Copy()
+	b2.Set(6)
+
+	if !b2.Test(6) {
+		t.Errorf("expected bit 6 to be set")
+	}
+	if b1.Test(6) {
+		t.Errorf("expected bit 6 to not be set")
+	}
+
+}
+
 func TestUnion(t *testing.T) {
 	b1, _ := New(20)
 	b1.Set(5)
